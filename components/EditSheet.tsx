@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import type { Category, Item, ItemInput, Period, Status } from "@/lib/types";
-import { CATEGORY_EMOJI, CATEGORY_LABEL, PERIOD_LABEL, STATUS_LABEL } from "@/lib/types";
+import { CATEGORY_LABEL, PERIOD_LABEL, STATUS_LABEL } from "@/lib/types";
 import { longDate, tripDays } from "@/lib/client";
 import { Sheet } from "./Sheets";
 
@@ -109,7 +109,7 @@ export default function EditSheet({
               <select id="f-cat" value={v.category} onChange={(e) => set("category", e.target.value as Category)}>
                 {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
                   <option key={c} value={c}>
-                    {CATEGORY_EMOJI[c]} {CATEGORY_LABEL[c]}
+                    {CATEGORY_LABEL[c]}
                   </option>
                 ))}
               </select>
@@ -119,7 +119,7 @@ export default function EditSheet({
               <div className="segmented" role="radiogroup">
                 {STATUSES.map((s) => (
                   <button key={s} role="radio" aria-checked={v.status === s} onClick={() => set("status", s)} type="button">
-                    {v.status === s && <motion.span layoutId="seg" className="seg-bg" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
+                    {v.status === s && <motion.span layoutId="seg" className="seg-bg" transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }} />}
                     <span>{STATUS_LABEL[s]}</span>
                   </button>
                 ))}

@@ -139,9 +139,9 @@ export default function InstallPrompt({ ready }: { ready: boolean }) {
             src="/apple-touch-icon.png"
             alt=""
             className="install-icon"
-            initial={{ scale: 0.4, rotate: -12 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 380, damping: 14, delay: 0.12 }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           />
           <h2 id="a2hs-title" className="display">Leve a viagem no bolso</h2>
           <p className="install-text">

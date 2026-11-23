@@ -68,11 +68,6 @@ export function DetailSheet({
 }) {
   const photos = [item.image_url, ...item.gallery].filter(Boolean);
   const [idx, setIdx] = useState(0);
-  const stagger = (i: number) => ({
-    initial: { opacity: 0, y: 14 },
-    animate: { opacity: 1, y: 0 },
-    transition: { delay: 0.12 + i * 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
-  });
 
   return (
     <Sheet onClose={onClose} label={item.title}>
@@ -111,20 +106,16 @@ export function DetailSheet({
         </div>
 
         <div className="detail">
-          <motion.div {...stagger(0)} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <StatusBadge status={item.status} />
             <Rating item={item} />
-          </motion.div>
-          <motion.h1 className="display" {...stagger(1)} style={{ marginTop: 10 }}>
+          </div>
+          <h1 className="display" style={{ marginTop: 12 }}>
             {item.title}
-          </motion.h1>
-          {item.subtitle && (
-            <motion.p className="sub" {...stagger(2)}>
-              {item.subtitle}
-            </motion.p>
-          )}
+          </h1>
+          {item.subtitle && <p className="sub">{item.subtitle}</p>}
 
-          <motion.div className="facts" {...stagger(3)}>
+          <div className="facts">
             <span className="fact">
               <CalendarIcon size={15} /> {longDate(item.date)}
             </span>
@@ -133,43 +124,40 @@ export function DetailSheet({
                 <ClockIcon /> {item.time || PERIOD_LABEL[item.period]}
               </span>
             )}
-            <span className="fact">
-              {CATEGORY_EMOJI[item.category]} {CATEGORY_LABEL[item.category]}
-            </span>
-          </motion.div>
+            <span className="fact">{CATEGORY_LABEL[item.category]}</span>
+          </div>
 
           {item.notes && (
-            <motion.div className="note" {...stagger(4)}>
+            <div className="note">
               <b>💌 Nossa anotação</b>
               {item.notes}
-            </motion.div>
+            </div>
           )}
 
           {item.description && (
-            <motion.div {...stagger(5)}>
+            <div>
               <div className="section-label">Sobre o lugar</div>
               <p className="desc">{item.description}</p>
-            </motion.div>
+            </div>
           )}
 
           {item.place && (
-            <motion.div className="actions" {...stagger(6)}>
+            <div className="actions">
               <button className="btn primary" onClick={onDirections}>
                 <NavIcon /> Obter direções
               </button>
               <div className="fact" style={{ justifyContent: "flex-start", boxShadow: "none", background: "transparent", padding: "0 4px" }}>
                 <PinIcon size={15} /> {item.place}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {item.links.length > 0 && (
-            <motion.div {...stagger(7)}>
+            <div>
               <div className="section-label">Saiba mais</div>
               <div className="link-list">
                 {item.links.map((l) => (
                   <a key={l.url} className="link-item" href={l.url} target="_blank" rel="noreferrer">
-                    <span className="ta" aria-hidden>★</span>
                     <span className="grow">
                       {l.label}
                       <small>{new URL(l.url).hostname.replace("www.", "")}</small>
@@ -178,14 +166,14 @@ export function DetailSheet({
                   </a>
                 ))}
               </div>
-            </motion.div>
+            </div>
           )}
 
-          <motion.div className="actions" {...stagger(8)}>
+          <div className="actions">
             <button className="btn ghost" onClick={onEdit}>
               <EditIcon /> Editar item
             </button>
-          </motion.div>
+          </div>
         </div>
       </div>
     </Sheet>
@@ -207,10 +195,10 @@ export function DirectionsSheet({ place, onClose }: { place: string; onClose: ()
         <div className="as-group">
           <div className="as-title">Como chegar em<br /><b style={{ color: "var(--ink)" }}>{place}</b></div>
           <a className="as-btn" href={googleMapsUrl(place)} target="_blank" rel="noreferrer" onClick={onClose}>
-            🗺️ Google Maps
+            Google Maps
           </a>
           <a className="as-btn" href={wazeUrl(place)} target="_blank" rel="noreferrer" onClick={onClose}>
-            🚙 Waze
+            Waze
           </a>
         </div>
         <div className="as-group as-cancel">

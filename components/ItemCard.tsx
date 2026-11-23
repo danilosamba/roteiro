@@ -23,7 +23,7 @@ export function SafeImg({ src, alt, eager }: { src: string; alt: string; eager?:
 export function StatusBadge({ status }: { status: Item["status"] }) {
   return (
     <span className={`badge ${status}`}>
-      {status === "reservado" ? "✓ " : status === "sugestao" ? "✦ " : ""}
+      {status === "reservado" ? "✓ " : ""}
       {STATUS_LABEL[status]}
     </span>
   );

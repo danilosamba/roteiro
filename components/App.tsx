@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Category, Item, ItemInput } from "@/lib/types";
-import { CATEGORY_EMOJI, CATEGORY_LABEL, PERIOD_LABEL, TRIP } from "@/lib/types";
+import { CATEGORY_LABEL, PERIOD_LABEL, TRIP } from "@/lib/types";
 import {
   api, countdownLabel, DAY_TITLES, dayNum, getPin, longDate, minutesOf, setPin, sortDay,
   todayISO, tripDays, weekdayShort,
@@ -165,10 +165,10 @@ export default function App() {
         <motion.button
           className="fab"
           aria-label="Adicionar item ao roteiro"
-          initial={{ scale: 0, rotate: -90 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 22, delay: 0.5 }}
-          whileTap={{ scale: 0.9 }}
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.2, ease }}
+          whileTap={{ scale: 0.96 }}
           onClick={() => setEdit({ initial: emptyItem(day), id: null })}
         >
           <PlusIcon />
@@ -226,10 +226,10 @@ export default function App() {
           <motion.div
             key={toast}
             className="toast"
-            initial={{ opacity: 0, y: 16, scale: 0.9, x: "-50%" }}
-            animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
+            initial={{ opacity: 0, y: 8, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: 8, x: "-50%" }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            transition={{ duration: 0.2, ease }}
           >
             {toast}
           </motion.div>
@@ -265,9 +265,6 @@ function Roteiro({
           className="hero"
           onClick={() => onOpen(nextUp.id)}
           data-heart
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.1, ease }}
           whileTap={{ scale: 0.98 }}
         >
           <SafeImg src={nextUp.image_url} alt="" eager />
@@ -285,17 +282,14 @@ function Roteiro({
       )}
 
       <div className="days" role="tablist" aria-label="Dias da viagem">
-        {DAYS.map((d, i) => (
+        {DAYS.map((d) => (
           <motion.button
             key={d}
             role="tab"
             aria-selected={d === day}
             className="day-chip"
             onClick={() => pickDay(d)}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18 + i * 0.04, duration: 0.45, ease }}
-            whileTap={{ scale: 0.93 }}
+            whileTap={{ scale: 0.97 }}
           >
             {d === day && (
               <motion.span layoutId="day-pill" className="pill-bg" transition={{ type: "spring", stiffness: 420, damping: 34 }} />
@@ -333,15 +327,8 @@ function Roteiro({
           {items && list.length === 0 && <p className="empty">Nada por aqui ainda. Toque no + para adicionar ✨</p>}
 
           <div className="timeline">
-            {list.map((it, i) => (
-              <motion.div
-                key={it.id}
-                className="slot"
-                layout
-                initial={{ opacity: 0, y: 22 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.06 + i * 0.06, duration: 0.5, ease }}
-              >
+            {list.map((it) => (
+              <motion.div key={it.id} className="slot" layout>
                 <div className="when">
                   {it.time ? (
                     <>
@@ -366,25 +353,16 @@ function Roteiro({
 function Header() {
   return (
     <>
-      <motion.div className="top" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}>
-        <span className="couple-chip">
-          <span className="dot">💗</span> {TRIP.couple}
-        </span>
+      <div className="top">
+        <span className="couple-chip">{TRIP.couple}</span>
         <span className="countdown">{countdownLabel()}</span>
-      </motion.div>
-      <motion.p className="hello" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-        Nossa viagem para a serra
-      </motion.p>
-      <motion.h1
-        className="title-xl display"
-        initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.7, delay: 0.05, ease }}
-      >
+      </div>
+      <p className="hello">Nossa viagem para a serra</p>
+      <h1 className="title-xl display">
         Gramado
         <br />
         <em>&amp; Canela</em>
-      </motion.h1>
+      </h1>
     </>
   );
 }
@@ -411,24 +389,24 @@ function Lugares({ items, onOpen }: { items: Item[]; onOpen: (id: number) => voi
         {(["todos", ...cats] as const).map((c) => (
           <button key={c} className="filter" aria-pressed={cat === c} onClick={() => setCat(c)}>
             {cat === c && <motion.span layoutId="filter-pill" className="pill-bg" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
-            <span>{c === "todos" ? "Todos" : `${CATEGORY_EMOJI[c]} ${CATEGORY_LABEL[c]}`}</span>
+            <span>{c === "todos" ? "Todos" : CATEGORY_LABEL[c]}</span>
           </button>
         ))}
       </div>
 
       <motion.div className="grid" layout>
         <AnimatePresence mode="popLayout">
-          {places.map((p, i) => (
+          {places.map((p) => (
             <motion.button
               key={p.id}
               className="tile"
               onClick={() => onOpen(p.id)}
               data-heart
               layout
-              initial={{ opacity: 0, scale: 0.92, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.45, delay: Math.min(i * 0.04, 0.4), ease }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease }}
               whileTap={{ scale: 0.97 }}
             >
               <SafeImg src={p.image_url.replace("w=1200", "w=600")} alt="" />
@@ -453,37 +431,30 @@ function Lugares({ items, onOpen }: { items: Item[]; onOpen: (id: number) => voi
 function Nos({ items, onOpen }: { items: Item[]; onOpen: (id: number) => void }) {
   const hotel = items.find((i) => i.category === "hotel");
   const reserved = items.filter((i) => i.status === "reservado").length;
-  const ease2 = (i: number) => ({
-    initial: { opacity: 0, y: 16 },
-    animate: { opacity: 1, y: 0 },
-    transition: { delay: 0.05 + i * 0.07, duration: 0.5, ease },
-  });
 
   return (
     <div className="screen">
       <p className="hello" style={{ marginTop: 6 }}>{TRIP.couple}</p>
       <h1 className="title-xl display">Nós dois 💗</h1>
 
-      <motion.div className="love-card" {...ease2(0)}>
+      <div className="love-card">
         <div className="stripes" />
-        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", opacity: 0.9 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, opacity: 0.92 }}>
           Contagem regressiva
         </div>
         <div className="big display" style={{ marginTop: 6 }}>{countdownLabel()}</div>
         <div style={{ marginTop: 8, fontSize: 14, opacity: 0.92 }}>
           5 a 10 de dezembro de 2026 · 5 noites na serra
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div {...ease2(1)}>
+      <div>
         <div className="group-label">Resumo</div>
         <div className="group info-list" style={{ marginTop: 0 }}>
           <div className="info-row">
-            <span className="ico">🎟️</span>
             <div><b>{reserved} itens reservados</b><span>Ingressos e horários já contratados. Não mudar.</span></div>
           </div>
           <div className="info-row">
-            <span className="ico">🚗</span>
             <div><b>Carro alugado</b><span>Use &quot;Obter direções&quot; em cada lugar para abrir o Google Maps ou o Waze.</span></div>
           </div>
           {!isStandalone() && (
@@ -492,13 +463,11 @@ function Nos({ items, onOpen }: { items: Item[]; onOpen: (id: number) => void })
               style={{ width: "100%", textAlign: "left" }}
               onClick={() => window.dispatchEvent(new Event(OPEN_INSTALL_EVENT))}
             >
-              <span className="ico">📲</span>
               <div><b>Adicionar à tela inicial</b><span>Para abrir o roteiro como um app no celular.</span></div>
             </button>
           )}
           {hotel && (
             <button className="info-row" style={{ width: "100%", textAlign: "left" }} onClick={() => onOpen(hotel.id)}>
-              <span className="ico">🏡</span>
               <div>
                 <b>Sky Ville Hotel Gramado</b>
                 <span>Rua Itapeva, 59 · Check-in 05/12 às 14h · Check-out 10/12 até 12h</span>
@@ -506,20 +475,20 @@ function Nos({ items, onOpen }: { items: Item[]; onOpen: (id: number) => void })
             </button>
           )}
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div {...ease2(2)}>
+      <div>
         <div className="group-label">Legenda</div>
         <div className="group info-list" style={{ marginTop: 0 }}>
           <div className="info-row"><StatusBadge status="reservado" /><span>Já contratado, horário fixo</span></div>
           <div className="info-row"><StatusBadge status="planejado" /><span>Plano nosso, flexível</span></div>
           <div className="info-row"><StatusBadge status="sugestao" /><span>Ideia opcional, não reservada</span></div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.p {...ease2(3)} className="hint" style={{ textAlign: "center", margin: "26px 0 0" }}>
-        Fotos e notas: TripAdvisor · feito com carinho ✦
-      </motion.p>
+      <p className="hint" style={{ textAlign: "center", margin: "24px 0 0" }}>
+        Feito com carinho ❤︎
+      </p>
     </div>
   );
 }
@@ -550,15 +519,11 @@ function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
             setTab(t.id);
             window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
           }}
-          whileTap={{ scale: 0.88 }}
+          whileTap={{ scale: 0.96 }}
         >
-          <motion.span
-            animate={tab === t.id ? { scale: [1, 1.2, 1], y: [0, -3, 0] } : { scale: 1 }}
-            transition={{ duration: 0.4 }}
-            style={{ display: "grid" }}
-          >
+          <span style={{ display: "grid" }}>
             {t.id === "nos" && tab === "nos" ? <HeartIcon filled /> : t.icon}
-          </motion.span>
+          </span>
           {t.label}
         </motion.button>
       ))}
@@ -588,8 +553,7 @@ function PinSheet({ onDone }: { onDone: (ok: boolean) => void }) {
       <div style={{ position: "relative", zIndex: 91 }}>
         <Sheet onClose={() => onDone(false)} label="PIN">
           <div className="sheet-scroll" style={{ padding: "48px 24px", textAlign: "center" }}>
-            <div style={{ fontSize: 44 }}>🔐</div>
-            <h2 className="display" style={{ fontSize: 28, marginTop: 8 }}>Só para nós dois</h2>
+            <h2 className="display" style={{ fontSize: 28 }}>Só para nós dois</h2>
             <p className="hint" style={{ marginTop: 6 }}>Digite o PIN para salvar alterações.</p>
             <motion.input
               ref={ref}

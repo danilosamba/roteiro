@@ -102,7 +102,7 @@ select {
 }
 
 .screen {
-  padding: calc(var(--safe-t) + 18px) 20px 0;
+  padding: calc(var(--safe-t) + 16px) 20px 0;
 }
 
 /* ───────── header */
@@ -117,7 +117,7 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px 6px 8px;
+  padding: 6px 12px;
   border-radius: 999px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
@@ -126,22 +126,12 @@ select {
   color: var(--ink-2);
 }
 
-.couple-chip .dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--sunset);
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-}
-
 .countdown {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--rose-deep);
   background: var(--rose-soft);
-  padding: 6px 11px;
+  padding: 6px 12px;
   border-radius: 999px;
 }
 
@@ -167,12 +157,12 @@ select {
 /* ───────── hero card (próximo compromisso) */
 .hero {
   position: relative;
-  margin-top: 22px;
-  height: 230px;
+  margin-top: 24px;
+  height: 232px;
   border-radius: 28px;
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  background: var(--sunset);
+  background: var(--rose-soft);
   display: block;
   width: 100%;
   text-align: left;
@@ -195,8 +185,8 @@ select {
 
 .hero-body {
   position: absolute;
-  left: 18px;
-  right: 18px;
+  left: 16px;
+  right: 16px;
   bottom: 16px;
   z-index: 1;
   color: #fff;
@@ -206,14 +196,12 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 12.5px;
+  font-weight: 600;
   background: rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding: 5px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
 }
 
@@ -235,8 +223,8 @@ select {
   gap: 10px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
-  margin: 26px -20px 0;
-  padding: 4px 20px 6px;
+  margin: 24px -20px 0;
+  padding: 4px 20px 8px;
   scrollbar-width: none;
 }
 
@@ -303,7 +291,7 @@ select {
 
 /* ───────── day header */
 .day-head {
-  margin-top: 26px;
+  margin-top: 24px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -317,11 +305,9 @@ select {
 }
 
 .day-head .num {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--rose);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rose-deep);
 }
 
 .legend {
@@ -338,7 +324,7 @@ select {
   gap: 4px;
   font-size: 11.5px;
   font-weight: 700;
-  padding: 4px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
 }
@@ -362,7 +348,7 @@ select {
 
 /* ───────── timeline */
 .timeline {
-  margin-top: 18px;
+  margin-top: 16px;
   position: relative;
 }
 
@@ -402,8 +388,6 @@ select {
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .when .heart-pin {
@@ -423,7 +407,7 @@ select {
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: transform 0.16s var(--ease-out), box-shadow 0.2s;
+  transition: transform 0.15s var(--ease-out), box-shadow 0.15s ease-out;
 }
 
 .card:active {
@@ -445,7 +429,7 @@ select {
 .card-img {
   position: relative;
   aspect-ratio: 16 / 9;
-  background: var(--sunset);
+  background: var(--rose-soft);
   overflow: hidden;
 }
 
@@ -453,13 +437,6 @@ select {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s var(--ease-out);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .card:hover .card-img img {
-    transform: scale(1.04);
-  }
 }
 
 .card-img .badge {
@@ -551,7 +528,7 @@ select {
   color: #fff;
   display: grid;
   place-items: center;
-  box-shadow: 0 10px 24px rgba(239, 90, 124, 0.4);
+  box-shadow: var(--shadow-md);
   z-index: 30;
 }
 
@@ -600,8 +577,8 @@ select {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  margin: 18px -20px 0;
-  padding: 2px 20px 6px;
+  margin: 16px -20px 0;
+  padding: 2px 20px 8px;
   scrollbar-width: none;
 }
 
@@ -612,7 +589,7 @@ select {
 .filter {
   position: relative;
   flex: 0 0 auto;
-  padding: 9px 15px;
+  padding: 8px 16px;
   border-radius: 999px;
   font-size: 13.5px;
   font-weight: 600;
@@ -650,7 +627,7 @@ select {
   aspect-ratio: 3 / 4;
   border-radius: 24px;
   overflow: hidden;
-  background: var(--sunset);
+  background: var(--rose-soft);
   box-shadow: var(--shadow-sm);
   text-align: left;
 }
@@ -763,7 +740,7 @@ select {
 .gallery {
   position: relative;
   height: 320px;
-  background: var(--sunset);
+  background: var(--rose-soft);
 }
 
 .gallery-track {
@@ -833,7 +810,7 @@ select {
   margin-top: -22px;
   background: var(--bg);
   border-radius: 26px 26px 0 0;
-  padding: 22px 20px 0;
+  padding: 24px 20px 0;
 }
 
 .detail h1 {
@@ -852,14 +829,14 @@ select {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .fact {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 11px;
+  padding: 6px 12px;
   border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
@@ -869,12 +846,10 @@ select {
 }
 
 .section-label {
-  margin-top: 22px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+  margin-top: 24px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .desc {
@@ -899,16 +874,15 @@ select {
 
 .note b {
   display: block;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
   margin-bottom: 2px;
 }
 
 .actions {
   display: grid;
-  gap: 10px;
-  margin-top: 22px;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .btn {
@@ -920,7 +894,7 @@ select {
   border-radius: 16px;
   font-size: 16px;
   font-weight: 700;
-  transition: transform 0.12s var(--ease-out), filter 0.2s;
+  transition: transform 0.15s var(--ease-out);
 }
 
 .btn:active {
@@ -930,7 +904,6 @@ select {
 .btn.primary {
   background: var(--rose);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(239, 90, 124, 0.3);
 }
 
 .btn.ghost {
@@ -967,17 +940,6 @@ select {
   box-shadow: var(--shadow-sm);
   font-weight: 600;
   font-size: 14.5px;
-}
-
-.link-item .ta {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #34e0a1;
-  display: grid;
-  place-items: center;
-  color: #000;
-  flex: 0 0 32px;
 }
 
 .link-item .grow {
@@ -1076,12 +1038,10 @@ select {
 }
 
 .group-label {
-  margin: 20px 4px 6px;
-  font-size: 12.5px;
+  margin: 24px 4px 8px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .group {
@@ -1175,7 +1135,7 @@ select {
   border-radius: 16px;
   overflow: hidden;
   aspect-ratio: 16 / 9;
-  background: var(--sunset);
+  background: var(--rose-soft);
 }
 
 .img-preview img {
@@ -1199,9 +1159,9 @@ select {
 
 /* ───────── nós / info */
 .love-card {
-  margin-top: 20px;
+  margin-top: 24px;
   border-radius: 28px;
-  padding: 22px 20px;
+  padding: 24px 20px;
   background: var(--sunset);
   color: #fff;
   position: relative;
@@ -1243,11 +1203,6 @@ select {
   border-bottom: 0;
 }
 
-.info-row .ico {
-  font-size: 20px;
-  line-height: 1.2;
-}
-
 .info-row b {
   display: block;
   font-size: 14.5px;
@@ -1265,7 +1220,7 @@ select {
   transform: translateX(-50%);
   background: var(--ink);
   color: #fff;
-  padding: 11px 18px;
+  padding: 12px 20px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
@@ -1285,7 +1240,7 @@ select {
   z-index: 96;
   background: var(--bg);
   border-radius: 30px 30px 0 0;
-  padding: 26px 22px calc(var(--safe-b) + 14px);
+  padding: 24px 20px calc(var(--safe-b) + 16px);
   text-align: center;
   box-shadow: 0 -10px 40px rgba(43, 29, 46, 0.2);
 }
@@ -1295,13 +1250,13 @@ select {
   height: 76px;
   border-radius: 18px;
   margin: 0 auto;
-  box-shadow: 0 10px 24px rgba(239, 90, 124, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .install h2 {
   font-size: 28px;
   font-weight: 500;
-  margin-top: 14px;
+  margin-top: 16px;
   line-height: 1.1;
 }
 
@@ -1314,7 +1269,7 @@ select {
 .install-steps {
   list-style: none;
   text-align: left;
-  margin-top: 18px;
+  margin-top: 16px;
   background: var(--surface);
   border-radius: 18px;
   box-shadow: var(--shadow-sm);
@@ -1325,7 +1280,7 @@ select {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  padding: 13px 14px;
+  padding: 12px 16px;
   border-bottom: 0.5px solid var(--line);
   font-size: 14.5px;
   line-height: 1.45;
@@ -1354,7 +1309,7 @@ select {
 }
 
 .install .btn.danger {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 /* ───────── corações flutuantes */
