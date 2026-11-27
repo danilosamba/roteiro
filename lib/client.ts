@@ -1,4 +1,4 @@
-import type { Item, ItemInput } from "./types";
+import type { Item, ItemInput, Attachment } from "./types";
 import { TRIP } from "./types";
 
 export const DAY_TITLES: Record<string, string> = {
@@ -82,10 +82,14 @@ export function setPin(p: string) {
   } catch {}
 }
 
+export const OFFLINE_MSG = "Sem internet agora. Tente de novo quando tiver sinal.";
+
 async function req<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
     headers: { "content-type": "application/json", "x-pin": getPin(), ...(init?.headers || {}) },
+  }).catch(() => {
+    throw new Error(OFFLINE_MSG);
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -105,4 +109,63 @@ export const api = {
   authInfo: () => req<{ required: boolean }>("/api/auth"),
   checkPin: (pin: string) =>
     fetch("/api/auth", { method: "POST", body: JSON.stringify({ pin }) }).then((r) => r.ok),
+  upload: async (itemId: number, file: File) => {
+    const form = new FormData();
+    form.append("file", await prepareFile(file));
+    // sem content-type: o navegador monta o multipart sozinho
+    const res = await fetch(`/api/items/${itemId}/attachments`, {
+      method: "POST",
+      headers: { "x-pin": getPin() },
+      body: form,
+    }).catch(() => {
+      throw new Error(OFFLINE_MSG);
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(body.error || "Não deu para enviar o arquivo") as Error & { status?: number };
+      err.status = res.status;
+      throw err;
+    }
+    return body as Attachment;
+  },
+  removeAttachment: (id: string) => req<{ ok: true }>(`/api/attachments/${id}`, { method: "DELETE" }),
 };
+
+// ───────── ingressos anexados
+export const attachmentUrl = (id: string) => `/api/attachments/${id}`;
+export const attachmentDownloadUrl = (id: string) => `/api/attachments/${id}?download=1`;
+export const isPdf = (a: Attachment) => a.mime === "application/pdf";
+
+export function fileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
+}
+
+const MAX_UPLOAD = 4 * 1024 * 1024;
+const WEB_IMAGES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+// Fotos grandes (ou HEIC do iPhone) viram JPEG de até 2200 px antes de subir.
+async function prepareFile(file: File): Promise<File> {
+  const isImage = file.type.startsWith("image/") || /.(heic|heif)$/i.test(file.name);
+  if (!isImage) {
+    if (file.size > MAX_UPLOAD) throw new Error("O PDF passa de 4 MB");
+    return file;
+  }
+  if (WEB_IMAGES.includes(file.type) && file.size <= 1.5 * 1024 * 1024) return file;
+
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) {
+    if (file.size > MAX_UPLOAD) throw new Error("A imagem passa de 4 MB");
+    return file;
+  }
+  const scale = Math.min(1, 2200 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.85));
+  if (!blob) return file;
+  const name = file.name.replace(/.[^.]+$/, "") + ".jpg";
+  return new File([blob], name, { type: "image/jpeg" });
+}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Item } from "@/lib/types";
 import { CATEGORY_EMOJI, STATUS_LABEL } from "@/lib/types";
-import { StarIcon } from "./Icons";
+import { StarIcon, TicketIcon } from "./Icons";
 
 export function SafeImg({ src, alt, eager }: { src: string; alt: string; eager?: boolean }) {
   const [broken, setBroken] = useState(false);
@@ -39,6 +39,17 @@ export function Rating({ item }: { item: Item }) {
   );
 }
 
+// marca discreta de que o item tem ingresso anexado
+function HasTicket({ item }: { item: Item }) {
+  if (!item.attachments.length) return null;
+  return (
+    <span className="has-ticket" title="Ingresso anexado">
+      <TicketIcon size={16} />
+      <span className="sr-only">Ingresso anexado</span>
+    </span>
+  );
+}
+
 export default function ItemCard({ item, onOpen }: { item: Item; onOpen: () => void }) {
   if (!item.image_url) {
     return (
@@ -50,6 +61,7 @@ export default function ItemCard({ item, onOpen }: { item: Item; onOpen: () => v
           <span className="card-title" style={{ display: "block" }}>{item.title}</span>
           {item.subtitle && <span className="card-sub" style={{ display: "block" }}>{item.subtitle}</span>}
         </span>
+        <HasTicket item={item} />
         <StatusBadge status={item.status} />
       </button>
     );
@@ -64,7 +76,10 @@ export default function ItemCard({ item, onOpen }: { item: Item; onOpen: () => v
         <span className="card-title" style={{ display: "block" }}>{item.title}</span>
         <span className="card-row">
           <span className="card-sub">{item.subtitle}</span>
-          <Rating item={item} />
+          <span className="card-end">
+            <HasTicket item={item} />
+            <Rating item={item} />
+          </span>
         </span>
       </span>
     </button>

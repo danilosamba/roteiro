@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Category, Item, ItemInput } from "@/lib/types";
+import type { Attachment, Category, Item, ItemInput } from "@/lib/types";
 import { CATEGORY_LABEL, PERIOD_LABEL, TRIP } from "@/lib/types";
 import {
   api, countdownLabel, DAY_TITLES, dayNum, getPin, longDate, minutesOf, setPin, sortDay,
@@ -13,6 +13,10 @@ import { DetailSheet, DirectionsSheet, Scrim, Sheet } from "./Sheets";
 import EditSheet, { emptyItem } from "./EditSheet";
 import HeartFX from "./HeartFX";
 import Splash from "./Splash";
+import TicketViewer from "./TicketViewer";
+import OfflineSheet, { OfflineLink } from "./OfflineSheet";
+import { syncOffline } from "@/lib/offline";
+import ReleaseNotes from "./ReleaseNotes";
 import InstallPrompt, { OPEN_INSTALL_EVENT, isStandalone } from "./InstallPrompt";
 import { CalendarIcon, HeartIcon, PinIcon, PlusIcon } from "./Icons";
 
@@ -37,6 +41,10 @@ export default function App() {
   const [openId, setOpenId] = useState<number | null>(null);
   const [edit, setEdit] = useState<EditState>(null);
   const [dirPlace, setDirPlace] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<Attachment | null>(null);
+  const [offlineOpen, setOfflineOpen] = useState(false);
+  const [notesDone, setNotesDone] = useState(false);
+  const endNotes = useCallback(() => setNotesDone(true), []);
   const [toast, setToast] = useState("");
   const [askPin, setAskPin] = useState<null | ((ok: boolean) => void)>(null);
 
@@ -44,7 +52,13 @@ export default function App() {
     try {
       if (sessionStorage.getItem("splash-seen")) setSplash(false);
     } catch {}
-    api.list().then(setItems).catch((e) => setLoadErr(e.message));
+    api
+      .list()
+      .then((list) => {
+        setItems(list);
+        syncOffline(list).catch(() => {});
+      })
+      .catch((e) => setLoadErr(e.message));
   }, []);
 
   const endSplash = useCallback(() => {
@@ -122,15 +136,32 @@ export default function App() {
   };
 
   const startEdit = (i: Item) => {
-    const { id, ...rest } = i;
+    const { id, attachments: _files, ...rest } = i;
     setEdit({ initial: rest, id });
+  };
+
+  const attachFile = async (itemId: number, file: File) => {
+    const att = await withPin(() => api.upload(itemId, file));
+    setItems((s) => s!.map((i) => (i.id === itemId ? { ...i, attachments: [...i.attachments, att] } : i)));
+    showToast("Ingresso anexado");
+  };
+
+  const removeFile = async (att: Attachment) => {
+    await withPin(() => api.removeAttachment(att.id));
+    setItems((s) =>
+      s!.map((i) => (i.id === att.item_id ? { ...i, attachments: i.attachments.filter((a) => a.id !== att.id) } : i)),
+    );
+    setViewing(null);
+    showToast("Anexo removido");
   };
 
   return (
     <>
       <HeartFX />
       <AnimatePresence>{splash && <Splash key="splash" onDone={endSplash} />}</AnimatePresence>
-      <InstallPrompt ready={!splash} />
+      <ReleaseNotes ready={!splash} onDone={endNotes} />
+      {/* o convite da tela inicial só vem depois das notas da versão, nunca junto */}
+      <InstallPrompt ready={!splash && notesDone} />
 
       <main className="app">
         {!splash && (
@@ -155,7 +186,7 @@ export default function App() {
                 />
               )}
               {tab === "lugares" && <Lugares items={items || []} onOpen={setOpenId} />}
-              {tab === "nos" && <Nos items={items || []} onOpen={setOpenId} />}
+              {tab === "nos" && <Nos items={items || []} onOpen={setOpenId} onOffline={() => setOfflineOpen(true)} />}
             </motion.div>
           </AnimatePresence>
         )}
@@ -186,6 +217,8 @@ export default function App() {
             onClose={() => setOpenId(null)}
             onEdit={() => startEdit(open)}
             onDirections={() => setDirPlace(open.place)}
+            onAttach={(f) => attachFile(open.id, f)}
+            onOpenFile={setViewing}
           />
         )}
       </AnimatePresence>
@@ -202,6 +235,23 @@ export default function App() {
               onDelete={deleteItem}
             />
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {viewing && (
+          <TicketViewer
+            key={viewing.id}
+            file={viewing}
+            onClose={() => setViewing(null)}
+            onDelete={() => removeFile(viewing)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {offlineOpen && (
+          <OfflineSheet key="off" items={items || []} onClose={() => setOfflineOpen(false)} onToast={showToast} />
         )}
       </AnimatePresence>
 
@@ -428,7 +478,11 @@ function Lugares({ items, onOpen }: { items: Item[]; onOpen: (id: number) => voi
 }
 
 // ───────────────────────── Nós (resumo, hotel e legenda)
-function Nos({ items, onOpen }: { items: Item[]; onOpen: (id: number) => void }) {
+function Nos({ items, onOpen, onOffline }: {
+  items: Item[];
+  onOpen: (id: number) => void;
+  onOffline: () => void;
+}) {
   const hotel = items.find((i) => i.category === "hotel");
   const reserved = items.filter((i) => i.status === "reservado").length;
 
@@ -486,7 +540,9 @@ function Nos({ items, onOpen }: { items: Item[]; onOpen: (id: number) => void })
         </div>
       </div>
 
-      <p className="hint" style={{ textAlign: "center", margin: "24px 0 0" }}>
+      <OfflineLink onOpen={onOffline} />
+
+      <p className="hint" style={{ textAlign: "center", margin: "8px 0 0" }}>
         Feito com carinho ❤︎
       </p>
     </div>

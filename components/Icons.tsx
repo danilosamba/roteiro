@@ -88,3 +88,23 @@ export const OwlIcon = ({ size = 18 }: P) => (
     <path d="M4 9.5C6 7.5 9 6.8 12 8.5c3-1.7 6-1 8 1M11 16.5l1 1.5 1-1.5" />
   </svg>
 );
+
+export const DownloadIcon = ({ size = 18, className }: P) => (
+  <svg {...base(size)} className={className}>
+    <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
+  </svg>
+);
+
+export const TicketIcon = ({ size = 20, className }: P) => (
+  <svg {...base(size)} className={className}>
+    <path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5v2.2a2.3 2.3 0 0 0 0 4.6v2.2a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5v-2.2a2.3 2.3 0 0 0 0-4.6Z" />
+    <path d="M14.5 6.5v11" strokeDasharray="1.6 2" />
+  </svg>
+);
+
+export const FileIcon = ({ size = 20, className }: P) => (
+  <svg {...base(size)} className={className}>
+    <path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8Z" />
+    <path d="M14 3.5V8h4.5" />
+  </svg>
+);

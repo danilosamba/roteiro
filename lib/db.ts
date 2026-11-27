@@ -1,6 +1,6 @@
 import { createClient, type Client, type Row } from "@libsql/client";
 import { SEED } from "./seed";
-import type { Item, ItemInput } from "./types";
+import type { Attachment, Item, ItemInput } from "./types";
 
 // Local: arquivo SQLite em data/roteiro.db
 // Vercel: banco Turso (SQLite na nuvem) via TURSO_DATABASE_URL + TURSO_AUTH_TOKEN
@@ -35,7 +35,7 @@ function parse<T>(s: unknown, fallback: T): T {
   }
 }
 
-function fromRow(r: Row): Item {
+function fromRow(r: Row, attachments: Attachment[] = []): Item {
   return {
     id: Number(r.id),
     date: String(r.date),
@@ -54,6 +54,7 @@ function fromRow(r: Row): Item {
     reviews: String(r.reviews ?? ""),
     notes: String(r.notes ?? ""),
     sort: Number(r.sort ?? 0),
+    attachments,
   };
 }
 
@@ -68,6 +69,15 @@ async function init() {
     rating TEXT DEFAULT '', reviews TEXT DEFAULT '', notes TEXT DEFAULT '',
     sort INTEGER DEFAULT 0
   )`);
+  // ingressos guardados no próprio banco (PDF ou imagem)
+  await c.execute(`CREATE TABLE IF NOT EXISTS attachments (
+    id TEXT PRIMARY KEY,
+    item_id INTEGER NOT NULL,
+    name TEXT NOT NULL, mime TEXT NOT NULL, size INTEGER NOT NULL,
+    data BLOB NOT NULL,
+    created_at INTEGER NOT NULL
+  )`);
+  await c.execute("CREATE INDEX IF NOT EXISTS attachments_item ON attachments(item_id)");
   const { rows } = await c.execute("SELECT COUNT(*) AS n FROM items");
   if (Number(rows[0].n) === 0) {
     await c.batch(
@@ -85,12 +95,38 @@ async function ensure() {
   await ready;
 }
 
+const META = "id, item_id, name, mime, size";
+
+function metaFromRow(r: Row): Attachment {
+  return {
+    id: String(r.id),
+    item_id: Number(r.item_id),
+    name: String(r.name),
+    mime: String(r.mime),
+    size: Number(r.size),
+  };
+}
+
+async function attachmentsOf(itemId: number): Promise<Attachment[]> {
+  const { rows } = await db().execute({
+    sql: `SELECT ${META} FROM attachments WHERE item_id = ? ORDER BY created_at`,
+    args: [itemId],
+  });
+  return rows.map(metaFromRow);
+}
+
 export async function listItems(): Promise<Item[]> {
   await ensure();
-  const { rows } = await db().execute(
-    "SELECT * FROM items ORDER BY date, sort, id",
-  );
-  return rows.map(fromRow);
+  const [items, att] = await Promise.all([
+    db().execute("SELECT * FROM items ORDER BY date, sort, id"),
+    db().execute(`SELECT ${META} FROM attachments ORDER BY created_at`),
+  ]);
+  const byItem = new Map<number, Attachment[]>();
+  for (const r of att.rows) {
+    const a = metaFromRow(r);
+    byItem.set(a.item_id, [...(byItem.get(a.item_id) || []), a]);
+  }
+  return items.rows.map((r) => fromRow(r, byItem.get(Number(r.id))));
 }
 
 export async function createItem(i: ItemInput): Promise<Item> {
@@ -108,10 +144,51 @@ export async function updateItem(id: number, i: ItemInput): Promise<Item | null>
     sql: `UPDATE items SET ${COLS.map((c) => `${c} = ?`).join(",")} WHERE id = ? RETURNING *`,
     args: [...toArgs(i), id],
   });
-  return r.rows[0] ? fromRow(r.rows[0]) : null;
+  return r.rows[0] ? fromRow(r.rows[0], await attachmentsOf(id)) : null;
 }
 
 export async function deleteItem(id: number): Promise<void> {
   await ensure();
-  await db().execute({ sql: "DELETE FROM items WHERE id = ?", args: [id] });
+  await db().batch(
+    [
+      { sql: "DELETE FROM attachments WHERE item_id = ?", args: [id] },
+      { sql: "DELETE FROM items WHERE id = ?", args: [id] },
+    ],
+    "write",
+  );
+}
+
+export async function itemExists(id: number): Promise<boolean> {
+  await ensure();
+  const { rows } = await db().execute({ sql: "SELECT 1 FROM items WHERE id = ?", args: [id] });
+  return rows.length > 0;
+}
+
+export async function addAttachment(
+  itemId: number,
+  file: { name: string; mime: string; data: Uint8Array },
+): Promise<Attachment> {
+  await ensure();
+  const id = crypto.randomUUID();
+  await db().execute({
+    sql: "INSERT INTO attachments (id, item_id, name, mime, size, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    args: [id, itemId, file.name, file.mime, file.data.byteLength, file.data, Date.now()],
+  });
+  return { id, item_id: itemId, name: file.name, mime: file.mime, size: file.data.byteLength };
+}
+
+export async function getAttachment(id: string): Promise<(Attachment & { data: Uint8Array }) | null> {
+  await ensure();
+  const { rows } = await db().execute({
+    sql: `SELECT ${META}, data FROM attachments WHERE id = ?`,
+    args: [id],
+  });
+  if (!rows[0]) return null;
+  const raw = rows[0].data as ArrayBuffer | Uint8Array;
+  return { ...metaFromRow(rows[0]), data: raw instanceof Uint8Array ? raw : new Uint8Array(raw) };
+}
+
+export async function deleteAttachment(id: string): Promise<void> {
+  await ensure();
+  await db().execute({ sql: "DELETE FROM attachments WHERE id = ?", args: [id] });
 }

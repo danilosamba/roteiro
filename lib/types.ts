@@ -14,6 +14,15 @@ export interface LinkItem {
   url: string;
 }
 
+// arquivo anexado a um item (ingresso em PDF ou imagem)
+export interface Attachment {
+  id: string;
+  item_id: number;
+  name: string;
+  mime: string;
+  size: number;
+}
+
 export interface Item {
   id: number;
   date: string; // YYYY-MM-DD
@@ -32,9 +41,10 @@ export interface Item {
   reviews: string;
   notes: string;
   sort: number;
+  attachments: Attachment[];
 }
 
-export type ItemInput = Omit<Item, "id">;
+export type ItemInput = Omit<Item, "id" | "attachments">;
 
 export const TRIP = {
   title: "Gramado & Canela",

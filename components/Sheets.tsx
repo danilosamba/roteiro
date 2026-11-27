@@ -1,12 +1,14 @@
 "use client";
 
 import { motion, useDragControls, type PanInfo } from "motion/react";
-import { useState, type ReactNode } from "react";
-import type { Item } from "@/lib/types";
+import { useRef, useState, type ReactNode } from "react";
+import type { Attachment, Item } from "@/lib/types";
 import { CATEGORY_EMOJI, CATEGORY_LABEL, PERIOD_LABEL } from "@/lib/types";
-import { googleMapsUrl, longDate, wazeUrl } from "@/lib/client";
+import { attachmentUrl, fileSize, googleMapsUrl, isPdf, longDate, wazeUrl } from "@/lib/client";
 import { SafeImg, StatusBadge, Rating } from "./ItemCard";
-import { CalendarIcon, ClockIcon, CloseIcon, EditIcon, ExternalIcon, NavIcon, PinIcon } from "./Icons";
+import {
+  CalendarIcon, ClockIcon, CloseIcon, EditIcon, ExternalIcon, FileIcon, NavIcon, PinIcon, TicketIcon,
+} from "./Icons";
 
 const spring = { type: "spring", stiffness: 380, damping: 38, mass: 0.9 } as const;
 
@@ -60,11 +62,15 @@ export function DetailSheet({
   onClose,
   onEdit,
   onDirections,
+  onAttach,
+  onOpenFile,
 }: {
   item: Item;
   onClose: () => void;
   onEdit: () => void;
   onDirections: () => void;
+  onAttach: (file: File) => Promise<void>;
+  onOpenFile: (file: Attachment) => void;
 }) {
   const photos = [item.image_url, ...item.gallery].filter(Boolean);
   const [idx, setIdx] = useState(0);
@@ -134,6 +140,8 @@ export function DetailSheet({
             </div>
           )}
 
+          <Tickets files={item.attachments} onAttach={onAttach} onOpen={onOpenFile} />
+
           {item.description && (
             <div>
               <div className="section-label">Sobre o lugar</div>
@@ -177,6 +185,70 @@ export function DetailSheet({
         </div>
       </div>
     </Sheet>
+  );
+}
+
+// ───────── ingressos anexados ao item
+function Tickets({
+  files,
+  onAttach,
+  onOpen,
+}: {
+  files: Attachment[];
+  onAttach: (file: File) => Promise<void>;
+  onOpen: (file: Attachment) => void;
+}) {
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setBusy(true);
+    setErr("");
+    try {
+      await onAttach(file);
+    } catch (x) {
+      const msg = (x as Error).message;
+      if (msg !== "Edição cancelada") setErr(msg);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="section-label">Ingressos</div>
+      {files.length > 0 && (
+        <div className="link-list">
+          {files.map((f) => (
+            <button key={f.id} className="link-item ticket" onClick={() => onOpen(f)}>
+              <span className="ticket-thumb" aria-hidden>
+                {isPdf(f) ? <FileIcon /> : <img src={attachmentUrl(f.id)} alt="" loading="lazy" />}
+              </span>
+              <span className="grow">
+                <span className="ticket-name">{f.name}</span>
+                <small>{isPdf(f) ? "PDF" : "Imagem"} · {fileSize(f.size)}</small>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+      <input
+        ref={input}
+        type="file"
+        accept="application/pdf,image/*"
+        hidden
+        onChange={pick}
+      />
+      <button className="btn ghost attach-btn" onClick={() => input.current?.click()} disabled={busy}>
+        <TicketIcon /> {busy ? "Enviando…" : "Anexar ingresso"}
+      </button>
+      <p className="hint">PDF ou foto, até 4 MB.</p>
+      {err && <p className="error">{err}</p>}
+    </div>
   );
 }
 
